@@ -25,9 +25,15 @@ def url_health():
 def url_login():
     username = request.form['username']
     password = request.form['password']
+    jwt = login.generate_token(username, password)
+
+    if jwt is None:
+        return jsonify({"error": "The username and password you entered did not match"}), 403
+
     res = {
-        "data": login.generate_token(username, password)
+        "data": jwt
     }
+
     return jsonify(res)
 
 
@@ -35,9 +41,15 @@ def url_login():
 @app.route("/protected")
 def url_protected():
     auth_token = request.headers.get('Authorization')
+    access = protected.access_data(auth_token)
+
+    if access is None:
+        return jsonify({"error": "The token you entered did not match"}), 403
+
     res = {
-        "data": protected.access_data(auth_token)
+        "data": access
     }
+    
     return jsonify(res)
 
 
